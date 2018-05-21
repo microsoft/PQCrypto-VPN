@@ -14,15 +14,7 @@ We will also enable other ciphersuites as much as we are able to make them work.
 
 We test on Ubuntu Server 16.04 LTS as our Linux platform, and on Windows 10 with Visual Studio 2017. We have not yet tested any other combinations but will offer comment on what we think will be required with other versions, particularly for Microsoft platforms.
 
-We also provide software and instructions for building a post-quantum secure
-VPN appliance with a Raspberry Pi 3.  The device acts as a WiFi access point, and
-tunnels all of its traffic over the post-quantum VPN.  This has two main
-advantages when compared to using a VPN client on the device.  First,
-installing VPN client software is not required.  Second, using VPN software can
-be error prone, and not all traffic will be protected if there are
-configuration errors.  With a hardware device, all devices connecting to it get
-post-quantum security transparently.  See the `pqap` directory, and the README file
-there for more information.
+We also provide software and instructions for building a post-quantum secure VPN appliance with a Raspberry Pi 3.  The device acts as a WiFi access point, and tunnels all of its traffic over the post-quantum VPN.  This has two main advantages when compared to using a VPN client on the device.  First, installing VPN client software is not required.  Second, using VPN software can be error prone, and not all traffic will be protected if there are configuration errors.  With a hardware device, all devices connecting to it get post-quantum security transparently.  See the `pqap` directory, and the README file there for more information.
 
 ---
 
@@ -164,3 +156,4 @@ The build system currently does some extraneous work, such as cross-compiling Op
 
 OpenVPN's line length limit in configuration files limits how many ciphersuites we can specify in order to guarantee a post-quantum ciphersuite is selected.
 
+Our code is currently based on OpenVPN 2.4.4 and the Open Quantum Safe fork of OpenSSL 1.0.2. Because work is still underway to integrate liboqs with the OpenSSL 1.1 series, and OpenVPN began supporting OpenSSL 1.1 with version 2.4.5, we have not yet updated to the latest version of OpenVPN. To address CVE-2018-9336 which affects OpenVPN versions 2.4.5 and earlier, we have backported the fix from version 2.4.6.
