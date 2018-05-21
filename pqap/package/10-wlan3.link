@@ -1,0 +1,7 @@
+[Match]
+Driver=brcmfmac
+Type=wlan
+
+[Link]
+Name=wlan3
+MACAddressPolicy=persistent

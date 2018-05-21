@@ -1,0 +1,38 @@
+<html>
+    <meta charset="utf-8"> 
+    <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+
+<h2> Post-Quantum VPN Device Control Panel </h2>
+    <p>If you've been shown this page unexpectedly, the device does not have internet
+    connectivity and may need some configuration information from you. </p>
+    <p>Everything is configured from the <a href="/?p=dashboard">Dashboard</a> page.</p>
+
+<h2> Device Configuration Overview </h2>
+<p>
+This device provides a wireless hotspot that routes all traffic over a VPN tunnel.
+The VPN uses post-quantum cryptography.
+</p>
+<p>
+The device can be configured to use ethernet or WiFi. For ethernet, no configuration is required, 
+simply connect the network cable and reboot.
+</p>
+<p>For WiFi:</p>
+    <ol>
+    <li>Go to the <a href="/?p=dashboard">Dashboard</a> </li>
+    <li>Then, under "WiFi Networks Nearby", find the network you want to
+    connect to and click "Configure"</li>
+    <li>You'll have to enter the name, and for secured networks, the
+    password/key.</li>
+    <li>Now when you return to the Dashboard, the network will be listed under
+    "Known WiFi Networks", and you can click "Connect"</li>
+    <li> This will connect to the wireless network, and use it to establish the
+    VPN tunnel.  You will be disconnected and the AP may disappear momentarily.
+    </li>
+    </ol>
+<p> Hidden networks, and networks that use a captive portal before allowing
+connections are not currently supported </p>
+    </body>
+</html>

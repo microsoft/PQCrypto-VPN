@@ -1,0 +1,32 @@
+<html>
+    <meta charset="utf-8"> 
+    <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+    <h3>Configure WiFi network for connectivity to the Internet</h3>
+
+        <form action="/" method="post">
+            <input name="p" type="hidden" value="configure_result"/>
+            <input name="security" type="hidden" value="[% IF security %]1[% END %]"/>
+            <table>
+            <tr><td>SSID:</td><td> <input name="ssid" type="text" value="[% IF ssid %][% ssid %][% END %]" /></td></tr>
+            [% IF security %]
+            <tr><td>Network Key:</td><td> <input name="psk" type="text" /> </td></tr>
+            [% END %]
+            <tr><td colspan="2"><input type="submit" value="Save Network"></td></tr>
+            </table>
+
+        </form>
+
+    [% IF ssid_details %]
+    <h3> Network Details:</h3>
+    <pre>
+        [% ssid_details %]
+    </pre>
+    [% END %]
+
+    <p> <a href="/?p=dashboard">Go back to the Dashboard</a> </p>
+
+    </body>
+</html>

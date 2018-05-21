@@ -1,0 +1,9 @@
+
+Defaults:www-data !requiretty
+www-data ALL=(root) NOPASSWD: /home/pqap-default/vpn/do_scan.pl
+www-data ALL=(root) NOPASSWD: /home/pqap-default/vpn/do_wlan1.pl
+www-data ALL=(root) NOPASSWD: /home/pqap-default/vpn/pqap.sh
+
+pqap-default ALL=(root) NOPASSWD: /home/pqap-default/vpn/do_scan.pl
+pqap-default ALL=(root) NOPASSWD: /home/pqap-default/vpn/do_wlan1.pl
+pqap-default ALL=(root) NOPASSWD: /home/pqap-default/vpn/pqap.sh

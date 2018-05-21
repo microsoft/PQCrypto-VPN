@@ -1,0 +1,16 @@
+<html>
+    <meta charset="utf-8"> 
+    <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+    <h3>Result for connecting to SSID: [% IF ssid %] [% ssid %]  [% END %]</h3>
+
+    <p> 
+    [% IF message %] [% message %] [% END %]
+    </p>
+
+    <p> <a href="/?p=dashboard">Go back to the Dashboard</a> </p>
+
+    </body>
+</html>

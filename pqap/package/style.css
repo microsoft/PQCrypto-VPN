@@ -1,0 +1,35 @@
+
+body {
+    font-family: sans-serif;
+}
+
+p {
+    margin-left: 5%;
+}
+
+ol {
+    margin-left: 5%;
+}
+
+
+table {
+    margin-left: 5%;
+}
+
+th {
+    text-align: left; 
+}
+
+table {
+    border-collapse: collapse;
+}
+tr { 
+    border: solid;
+    border-width: 1px 0;
+    border-color: grey;
+}
+form {
+   display: inline;
+   margin: 0;
+   padding: 0;
+}

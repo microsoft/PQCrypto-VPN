@@ -1,0 +1,4 @@
+iface wlan1 inet dhcp
+    wpa-ssid "%%SSID%%"
+     wpa-key-mgmt NONE
+

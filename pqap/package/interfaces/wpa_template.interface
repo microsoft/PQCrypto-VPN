@@ -1,0 +1,11 @@
+
+iface wlan1 inet dhcp
+    wpa-ssid "%%SSID%%"
+    wpa-psk "%%PSK%%"
+# The following options are supported, but should be auto-detected
+#    wpa-ap-scan 1  #if the network is hidden uncomment this 
+#    wpa-proto WPA2
+#    wpa-pairwise CCMP
+#    wpa-group CCMP
+#    wpa-key-mgmt WPA-PSK
+

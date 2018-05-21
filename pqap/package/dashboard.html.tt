@@ -1,0 +1,74 @@
+<html>
+    <meta charset="utf-8"> 
+    <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+    <h1> Dashboard </h1>
+
+        <h3>Interface information</h3>
+        To connect this device to a wired or wireless network, you may need to
+        provide the network operator with a MAC address.  Wired connections use
+        eth0, and wireless use wlan1.  The interface wlan0 is always used to
+        create the hotspot. 
+        [% IF macs %]
+        <table>
+            <tr><th>Interface</th> <th>MAC address</th><tr>
+            [% macs %]
+        <table>
+        [% END %]
+
+
+        <h3>Connectivity status</h3>
+        <p>
+          [% IF connectivity %]
+             [% connectivity %]
+          [% END %]
+          </br>
+          For a more thorough connectivity test <a href="/?p=connectivity">click here</a> (slow to load).
+        </p>
+
+        <h3>Known WiFi Networks</h3>
+        [% IF known_available || known_unavailable %]
+             
+            [% IF known_available %]
+            <table> 
+            <tr><td alighn="left" colspan="3"><b>Available</td></tr>
+                [% known_available %]
+            </table>
+            </br>
+            [% END %]
+
+            [% IF known_unavailable %]
+                <table>
+                <tr><td alighn="left" colspan="3"><b>Not Available</td></tr>
+                [% known_unavailable %]
+                </table>
+            [% END %]
+
+        [% ELSE %]
+            <p>No known networks found. Click a network below to configure it.</p>
+        [% END %]
+
+        <h3>WiFi Networks Nearby</h3>
+
+        [% IF macs_warn %]
+            <p> [% macs_warn %] </p>
+        [% ELSE %]
+
+
+        <p> Click the network name to configure it. </p>
+        <table>
+        <tr><th>SSID</th><th>Security</th><th>Signal Strength</th></tr>
+          [% IF ssids_rows %]
+             [% ssids_rows %]
+          [% END %]
+          </table>
+
+          <!-- <p> Click <a href="/?p=configure&ssid=&security=1">here</a> to configure a hidden network </p> -->
+          <p> Hidden networks are not supported </p>
+
+        [% END %]
+
+    </body>
+</html>

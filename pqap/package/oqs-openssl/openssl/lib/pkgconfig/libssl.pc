@@ -1,0 +1,12 @@
+prefix=/home/pq-vpn2/Walrus/openvpn/build/scratch/oqs-openssl-output/openssl
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: OpenSSL-libssl
+Description: Secure Sockets Layer and cryptography libraries
+Version: 1.0.2m-dev
+Requires.private: libcrypto
+Libs: -L${libdir} -lssl
+Libs.private: -ldl
+Cflags: -I${includedir} 

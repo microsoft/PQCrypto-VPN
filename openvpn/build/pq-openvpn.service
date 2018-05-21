@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenVPN-Walrus Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/openvpn/sbin/openvpn --config /usr/local/openvpn/etc/server.ovpn
+PIDFile=/usr/local/openvpn/log/openvpn.pid
+
+[Install]
+WantedBy=multi-user.target
+

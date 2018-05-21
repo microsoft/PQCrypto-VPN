@@ -1,0 +1,8 @@
+The CA certificate ca.crt is a placeholder, you must replace it with a CA
+certificate created for your OpenVPN network.  See the [instructions from
+OpenVPN](https://openvpn.net/index.php/open-source/documentation/howto.html#pki)
+for creating RSA-signed certificates, or `openvpn/config/picnic-pki.md` for
+Picnic-signed certificates.  Using Picnic certificates provides post-quantum
+security for authentication as well. 
+
+
