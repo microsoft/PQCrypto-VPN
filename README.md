@@ -18,6 +18,12 @@ We also provide software and instructions for building a post-quantum secure VPN
 
 ---
 
+## Releases
+
+Please see [our releases page](https://github.com/Microsoft/PQCrypto-VPN/releases) for pre-built binaries for both Windows and Ubuntu Linux.
+
+---
+
 ## Tell us what you think
 
 For bug reports, feature requests, and other issues with the code itself, please raise them in [our issues tracker](https://github.com/Microsoft/PQCrypto-VPN/issues). For pull requests, please see the next section on Contributing. For other feedback, questions, comments, or anything else you'd like to tell us, you can talk to us at [msrsc@microsoft.com](mailto:msrsc@microsoft.com).
