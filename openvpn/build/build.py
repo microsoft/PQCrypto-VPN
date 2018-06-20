@@ -12,6 +12,7 @@
 #         - sudo apt-get install autoconf curl nsis libtool libssl-dev \
 #             liblz4-dev liblzo2-dev libpam0g-dev gcc-mingw-w64 man2html \
 #             dos2unix unzip
+#         - mingw when cross compiling for windows (apt-get install mingw-w64)
 #     - Darwin: all dependencies are installed
 #         - XCode xcode-select --install
 #     - Windows:
@@ -20,6 +21,9 @@
 #         - recent Perl is installed and in the system PATH
 #           http://strawberryperl.com/releases.html (MSI and standalone ZIP
 #           versions available)
+#         - recent Python is installed and in the system PATH
+#           msiexec -i /tmp/python-2.7.14.msi -q
+#           from https://www.python.org/ftp/python/
 
 import argparse
 import os
@@ -43,13 +47,14 @@ OPENSSL_OQS_REPO = 'https://github.com/open-quantum-safe/openssl'
 OPENSSL_OQS_BRANCH = 'OpenSSL_1_0_2-stable'
 OPENSSL_OQS_COMMIT = '01f211920aea41640c647f462e9d7c4c106e3240'
 OPENSSL_OQS_REPO_DIRNAME = 'openssl-oqs'
-OPENSSL_OQS_REPO_WIN_DIRNAME = 'openssl-oqs-win'
 OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.4.tar.gz'
 OPENVPN_GUI_TGZ_NAME = '/tmp/openvpn-gui-11.tar.gz'
 OPENVPN_REPO_DIRNAME = 'openvpn-2.4.4'
 OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.4-I601.exe'
 OPENVPN_GUI_REPO_DIRNAME = 'openvpn-gui'
 PREFIX = '/usr/local/openvpn'
+
+BUILD_TARGET_OS = platform.system()
 
 SOURCES_DIR = os.path.abspath('./sources')
 BUILD_DIR = os.path.abspath('./build')
@@ -88,6 +93,15 @@ To upgrade an existing installation:
 4. systemctl start pq-openvpn
 ''')
 
+LINUX_WINDOWS_POST = ('''
+The openvpn installer was built and needs to be tested on a windows machine.
+''')
+
+WINDOWS_POST = ('''
+Only the openssl lib was build. OpenVPN needs to be build with mingw.
+
+The libeay32.dll and ssleay32.dll need to be copied from the x86 or x64 stage.
+''')
 
 #
 # Private Utility Methods
@@ -128,7 +142,13 @@ def git_clone(repo_url, branch, local_name, commit=None):
     m = r.match(repo_url)
     repo_name = m.group(1)
     if os.path.isdir(local_name):
-        return git_pull(local_name)
+        if commit is None:
+            return git_pull(local_name)
+        else:
+            die(
+                'git_clone with commit cannot be cached. Use --skip-download'
+                ' or clean the SOURCES_DIR ({SOURCES_DIR})'.format(
+                    SOURCES_DIR=SOURCES_DIR))
     print('Cloning %s ...' % repo_name)
 
     cmd = ['git', 'clone']
@@ -188,6 +208,50 @@ def git_store(local_name):
         'tar', 'czf', package_name,
         local_name])
 
+
+def info_build(options):
+    print('Building {BUILD_TARGET_OS} on {platform}.'.format(
+        BUILD_TARGET_OS=BUILD_TARGET_OS,
+        platform=platform.system()))
+
+    if options.skip_download:
+        print(
+            'Skip downloading sources. They are expected in'
+            ' {SOURCES_DIR}'.format(
+            SOURCES_DIR=SOURCES_DIR))
+    else:
+        print('Downloading sources')
+
+    if options.skip_openssl:
+        print(
+            'Skip building OpenSSL. It is expected installed to'
+            ' "{STAGE_DIR}/lib" and "{STAGE_DIR}/include".'.format(
+                STAGE_DIR=STAGE_DIR))
+    else:
+        print('Building OpenSSL')
+
+    if options.skip_test:
+        print('Skip running "make test" on OpenSSL build')
+    else:
+        print('Running "make test" on OpenSSL build.')
+
+    if options.skip_openvpn:
+        print(
+            'Skip building OpenVPN. Used on Windows to produce the OpenSSL'
+            ' binaries only.')
+    else:
+        print('Building OpenVPN')
+
+    if options.skip_images:
+        print(
+            'Skip building images from {STAGE_DIR}. Used to inspect the build'
+            ' result.'.format(
+                STAGE_DIR=STAGE_DIR))
+    else:
+        print(
+            'Creating packed images of build binaries in {IMAGE_DIR}.'.format(
+                IMAGE_DIR=IMAGE_DIR))
+    print('')
 
 def mkdir(dir_name):
     '''
@@ -281,21 +345,17 @@ def download_remote_repositories():
             OPENSSL_OQS_REPO, OPENSSL_OQS_BRANCH, OPENSSL_OQS_REPO_DIRNAME,
             OPENSSL_OQS_COMMIT)
         git_clone(OPENVPN_REPO, OPENVPN_BRANCH, OPENVPN_REPO_DIRNAME)
-        if platform.system() == 'Windows':
-            git_clone(
-                OPENSSL_OQS_REPO, OPENSSL_OQS_BRANCH,
-                OPENSSL_OQS_REPO_WIN_DIRNAME, OPENSSL_OQS_COMMIT)
-            git_clone(
-                OPENVPN_BUILD_REPO, OPENVPN_BUILD_BRANCH,
-                OPENVPN_BUILD_REPO_DIRNAME)
-            git_clone(
-                OPENVPN_GUI_REPO, OPENVPN_GUI_BRANCH,
-                OPENVPN_GUI_REPO_DIRNAME)
 
-            git_store(OPENSSL_OQS_REPO_WIN_DIRNAME)
-            git_store(OPENVPN_REPO_DIRNAME)
-            git_store(OPENVPN_BUILD_REPO_DIRNAME)
-            git_store(OPENVPN_GUI_REPO_DIRNAME)
+        git_clone(
+            OPENVPN_BUILD_REPO, OPENVPN_BUILD_BRANCH,
+            OPENVPN_BUILD_REPO_DIRNAME)
+        git_clone(
+            OPENVPN_GUI_REPO, OPENVPN_GUI_BRANCH,
+            OPENVPN_GUI_REPO_DIRNAME)
+
+        git_store(OPENVPN_REPO_DIRNAME)
+        git_store(OPENVPN_BUILD_REPO_DIRNAME)
+        git_store(OPENVPN_GUI_REPO_DIRNAME)
 
         git_store(OPENSSL_OQS_REPO_DIRNAME)
         git_store(OPENVPN_REPO_DIRNAME)
@@ -311,10 +371,17 @@ def build_oqs_openssl_windows(test_build=False):
     Create source trees for x86 and x64
     Note that there's no way to clean up one tree and re-use it for a
     different arch.
-    '''
-    git_restore(OPENSSL_OQS_REPO_WIN_DIRNAME)
 
-    shutil.copytree(OPENSSL_OQS_REPO_WIN_DIRNAME, 'openssl-oqs-win-x86')
+    this builds the ssl-dlls on windows, as they cannot be cross-compiled
+    from a linux buildhost.
+    '''
+    git_restore(OPENSSL_OQS_REPO_DIRNAME)
+    if BUILD_TARGET_OS == 'Windows' and platform.system() == 'Linux':
+        if not os.path.isdir(os.path.join(STAGE_DIR, 'x86')):
+            die(
+                'There is a manual step copying the windows-build ssl dll to'
+                ' a location that openvpn configure can find it.')
+    shutil.copytree(OPENSSL_OQS_REPO_DIRNAME, 'openssl-oqs-win-x86')
     with chdir('openssl-oqs-win-x86'):
 
         # Start the X86 build
@@ -342,7 +409,7 @@ def build_oqs_openssl_windows(test_build=False):
         # of libeay32.dll and ssleay32.dll are present in the x86 folder.
 
     # Start the x64 build
-    shutil.copytree(OPENSSL_OQS_REPO_WIN_DIRNAME, 'openssl-oqs-win-x64')
+    shutil.copytree(OPENSSL_OQS_REPO_DIRNAME, 'openssl-oqs-win-x64')
     with chdir('openssl-oqs-win-x64'):
         run_command([
             'perl', 'Configure', 'VC-WIN64A', 'no-asm',
@@ -395,39 +462,9 @@ def build_oqs_openssl_unix(test_build=False):
 #
 
 
-def build_openvpn_windows():
-    # clone Walrus/openvpn
-    git_restore(OPENVPN_REPO_DIRNAME)
-    git_restore(OPENVPN_BUILD_REPO_DIRNAME)
-    git_restore(OPENVPN_GUI_REPO_DIRNAME)
-
-    # Prepare the OpenVPN repository for windows-nsis/build-complete
-    with chdir(OPENVPN_REPO_DIRNAME):
-        run_command(['autoreconf', '-i', '-v', '-f'])
-        run_command(['./configure'])
-
-    # the OpenVPN build scripts need a tarball of the same code
-    if os.path.exists(OPENVPN_TGZ_NAME):
-        os.remove(OPENVPN_TGZ_NAME)
-    run_command(['tar', 'czf', OPENVPN_TGZ_NAME, OPENVPN_REPO_DIRNAME])
-
-    # Prepare OpenVPN-GUI for windows-nsis/build-complete
-    with chdir(OPENVPN_GUI_REPO_DIRNAME):
-        run_command(['autoreconf', '-i', '-v', '-f'])
-
-    if os.path.exists(OPENVPN_GUI_TGZ_NAME):
-        os.remove(OPENVPN_GUI_TGZ_NAME)
-    run_command([
-        'tar', 'czf', OPENVPN_GUI_TGZ_NAME, OPENVPN_GUI_REPO_DIRNAME])
-
-    # Start the build
-    with chdir(OPENVPN_BUILD_REPO_DIRNAME):
-        run_command(['./windows-nsis/build-complete'])
-
-
-def build_openvpn_unix():
+def build_openvpn():
     '''
-    Build openvpn on linux/unix
+    Build openvpn on linux/unix/windows
     '''
 
     git_restore(OPENVPN_REPO_DIRNAME)
@@ -449,7 +486,7 @@ def build_openvpn_unix():
                     include_dir=include_dir))
 
         extra_openssl_libs = ''
-        if platform.system() == 'Linux':
+        if BUILD_TARGET_OS == 'Linux':
             extra_openssl_libs = '-Wl,-rpath={prefix}/lib'.format(
                 prefix=PREFIX)
 
@@ -462,14 +499,17 @@ def build_openvpn_unix():
             PKCS11_HELPER_CFLAGS='',
             PKCS11_HELPER_LIBS='')
 
-        # we need to use os.system here so that the env vars are set correctly
+        if BUILD_TARGET_OS == 'Windows':
+            run_env['CHOST'] = 'i686-w64-mingw32'
+            run_env['CBUILD'] = 'i686-pc-linux-gnu'
+
         run_command([
             './configure',
             '--prefix={prefix}'.format(prefix=PREFIX),
             '--disable-plugins',
             '--with-special-build=pq-openvpn'],
             environment=run_env)
-        run_command(['make'])
+        run_command(['make'], environment=run_env)
         run_command([
             'make', 'install',
             'DESTDIR={destdir}'.format(destdir=STAGE_DIR)])
@@ -491,7 +531,7 @@ def pack_images_unix():
     '''
     # Create a tarball for linux (needed to do Raspberry Pi builds)
     tarball_name = 'pq-openvpn-{platform}'.format(
-        platform=platform.system().lower())
+        platform=BUILD_TARGET_OS.lower())
     tarball_file = '{tarball_name}.tar.gz'.format(tarball_name=tarball_name)
 
     if os.path.isdir(tarball_name):
@@ -523,14 +563,15 @@ def pack_images_unix():
         print('!!! no sbin in stage, did openvpn make install run?')
         exit(1)
 
-    if platform.system() == 'Darwin':
+    if BUILD_TARGET_OS == 'Darwin':
         # Copy pointer to privacy statement into doc directory
         shutil.copy(RES_PRIVACY_TXT, doc_dir)
 
-    if platform.system() == 'Linux':
+    if BUILD_TARGET_OS == 'Linux':
         # Systemd convenience scripts
         with chdir(STAGE_DIR):
-            # Create placeholders for etc and log directories so they'll be created
+            # Create placeholders for etc and log directories so they are
+            # available for copy
             mkdir(etc_dir)
             mkdir(log_dir)
             mkdir(etc_systemd_dir)
@@ -563,38 +604,29 @@ def pack_images_unix():
                 tarball_name=tarball_name)))
         cmd.append('.')
         run_command(cmd)
+        print('{tarball_name} is now stored in {IMAGE_DIR}'.format(
+            tarball_name=tarball_name, IMAGE_DIR=IMAGE_DIR))
 
 
 def build_oqs_openssl(test_build=False):
     '''
     Build oqs_openssl
     '''
-    if platform.system() == 'Windows':
+    if BUILD_TARGET_OS == 'Windows':
         build_oqs_openssl_windows(test_build)
 
-    if platform.system() == 'Linux' or platform.system() == 'Darwin':
+    if BUILD_TARGET_OS == 'Linux' or BUILD_TARGET_OS == 'Darwin':
         build_oqs_openssl_unix(test_build)
-
-
-def build_openvpn(test_build=False):
-    '''
-    Build oqs_openssl
-    '''
-    if platform.system() == 'Windows':
-        build_openvpn_windows()
-
-    if platform.system() == 'Linux' or platform.system() == 'Darwin':
-        build_openvpn_unix()
 
 
 def pack_images():
     '''
     Build oqs_openssl
     '''
-    if platform.system() == 'Windows':
+    if BUILD_TARGET_OS == 'Windows':
         pack_images_windows()
 
-    if platform.system() == 'Linux' or platform.system() == 'Darwin':
+    if BUILD_TARGET_OS == 'Linux' or BUILD_TARGET_OS == 'Darwin':
         pack_images_unix()
 
 
@@ -602,8 +634,12 @@ def post_messages():
     '''
     Display messages when the build has completed
     '''
-    if platform.system() == 'Linux':
+    if BUILD_TARGET_OS == 'Linux':
         print(LINUX_UBUNTU_POST)
+    if BUILD_TARGET_OS == 'Windows' and platform.system() == 'Linux':
+        print(LINUX_WINDOWS_POST)
+    if BUILD_TARGET_OS == 'Windows' and platform.system() == 'Windows':
+        print(WINDOWS_POST)
 
 
 #
@@ -624,6 +660,16 @@ parser.add_argument(
     '--verbose', action='store_true',
     help=('Be verbose.'),
     default=False)
+parser.add_argument(
+    '--target', action='store',
+    choices=['Linux', 'Darwin', 'Windows'],
+    help=(
+        'Build target platform. Defaults to "{platform}".'
+        ' On Linux you may build Linux and Windows using mingw.'
+        ' On Windows you may only build the openssl library'
+        ' On Darwin you may only build the Darwin binaries.'.format(
+            platform=platform.system())),
+    default=platform.system())
 
 parser.add_argument(
     '--prefix', nargs='?', action='store', dest='prefix',
@@ -674,12 +720,25 @@ SOURCES_DIR = os.path.abspath(options.sources_dir)
 IMAGE_DIR = os.path.abspath(options.image_dir)
 VERBOSE = options.verbose
 PREFIX = options.prefix
+BUILD_TARGET_OS = options.target
 
 if not options.no_clean:
     if os.path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR, False, rmtree_force)
+if BUILD_TARGET_OS == 'Windows' and platform.system() == 'Windows':
+    # windows cannot really build openvpn, this is done on linux with
+    # mingw.
+    options.skip_openvpn = True
+    options.skip_images = True
+if BUILD_TARGET_OS == 'Windows' and platform.system() == 'Linux':
+    # openssl was build on windows and copied back to this host.
+    options.skip_openssl = True
+
 mkdir(BUILD_DIR)
 mkdir(IMAGE_DIR)
+mkdir(STAGE_DIR)
+
+info_build(options)
 
 if not options.skip_download:
     download_remote_repositories()
