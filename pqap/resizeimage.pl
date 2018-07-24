@@ -3,6 +3,8 @@
 # Script taken from https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=58069
 # with minor modifications
 
+# Portions Copyright (C) 2018 Microsoft Corporation
+
 use utf8;
 use 5.010;
 use strict;

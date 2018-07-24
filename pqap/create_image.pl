@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# Copyright (C) 2018 Microsoft Corporation
+
 use strict;
 use warnings;
 use File::Copy;

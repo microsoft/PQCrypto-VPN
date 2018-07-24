@@ -14,6 +14,7 @@
 #                recent Perl is installed and in the system PATH
 #                     - http://strawberryperl.com/releases.html (MSI and standalone ZIP versions available)
 
+# Copyright (C) 2018 Microsoft Corporation
 
 import os
 import shutil
@@ -200,6 +201,8 @@ def build_openvpn_linux():
     shutil.copy('../../initialsetup.sh', '.' + OPENVPN_LINUX_PREFIX + '/sbin')
     # Copy pointer to privacy statement into doc directory
     shutil.copy('../../PRIVACY.txt', '.' + OPENVPN_LINUX_PREFIX + '/share/doc/openvpn')
+    # Copy Third Party notice into doc directory
+    shutil.copy('../../../../ThirdPartyNotice.txt', '.' + OPENVPN_LINUX_PREFIX + '/share/doc/openvpn')
     # Copy service file for systemd into the appropriate place
     os.makedirs('etc/systemd/system')
     shutil.copy('../../pq-openvpn.service', 'etc/systemd/system')

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright (C) 2018 Microsoft Corporation
+
 # After unpacking staged tarball, do a couple of setup steps to start
 # and stop OpenVPN automatically. This script must be run as root, so
 # run it with sudo.

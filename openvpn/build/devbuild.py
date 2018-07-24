@@ -25,6 +25,7 @@
 #                recent Perl is installed and in the system PATH
 #                   - http://strawberryperl.com/releases.html (MSI and standalone ZIP versions available)
 
+# Copyright (C) 2018 Microsoft Corporation
 
 import os
 import shutil
