@@ -85,6 +85,10 @@ We also use the OpenSSL fork maintained by the Open Quantum Safe Project for the
 
 * https://github.com/open-quantum-safe/openssl
 
+Due to changes in the content of the upstream OQS OpenSSL fork, we are temporarily using a fork of that repo to fix the resulting build break. We will return to the official upstream branch when we migrate to the OpenSSL 1.1.1 fork.
+
+* https://github.com/kevinmkane/openssl
+
 ---
 
 ## Setup instructions
