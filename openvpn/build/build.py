@@ -10,6 +10,7 @@
 #     - Linux: all dependencies are installed
 #         - sudo apt-get install autoconf curl nsis libtool libssl-dev \
 #                liblz4-dev liblzo2-dev libpam0g-dev gcc-mingw-w64 man2html dos2unix unzip
+#                net-tools pkg-config wget
 #     - Windows: Microsoft Visual Studio 2017 is installed in the default location on C:
 #                recent Perl is installed and in the system PATH
 #                     - http://strawberryperl.com/releases.html (MSI and standalone ZIP versions available)
@@ -50,6 +51,13 @@ def run_command(cmd):
     p = subprocess.Popen(cmd)
     if p.wait() != 0:
         raise RuntimeError('Command failed')
+
+# Make directories, but if the directories exist, that's okay.
+def makedirs(name):
+    try:
+        os.makedirs(name)
+    except OSError:
+        pass
 
 # Clone a git repo, using the default name, in the CWD
 # If branch is specified, clone that branch
@@ -121,8 +129,8 @@ def build_oqs_openssl():
     if platform.system() == 'Linux':
         git_clone(OPENSSL_OQS_REPO, OPENSSL_OQS_BRANCH, 'openssl-oqs', OPENSSL_OQS_COMMIT)
 
-        os.makedirs('oqs-openssl-output/openssl')
-        os.makedirs('oqs-openssl-output/ssl')
+        makedirs('oqs-openssl-output/openssl')
+        makedirs('oqs-openssl-output/ssl')
         prefix = os.path.abspath('oqs-openssl-output/openssl')
         openssldir = os.path.abspath('oqs-openssl-output/ssl')
         os.chdir('openssl-oqs')
@@ -163,7 +171,7 @@ def build_openvpn_linux():
     if os.path.exists('stage'):
         shutil.rmtree('stage')
 
-    os.makedirs('stage')
+    makedirs('stage')
     stagepath = os.path.abspath('stage')
 
     os.chdir('openvpn-pq')
@@ -182,13 +190,14 @@ def build_openvpn_linux():
     os.system('./configure --prefix=' + OPENVPN_LINUX_PREFIX + ' ' + openssl_cflags + ' ' + openssl_libs + ' && make && make DESTDIR=' + stagepath + ' install')
 
     # We need to copy our versions of libcrypto and libssl into the staging area
+    makedirs(stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
     shutil.copy('../oqs-openssl-output/openssl/lib/libcrypto.so.1.0.0', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
     shutil.copy('../oqs-openssl-output/openssl/lib/libssl.so.1.0.0', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
 
     os.chdir('..')
 
     # Create a tarball for linux (needed to do Raspberry Pi builds)
-    os.makedirs('pq-openvpn-linux')
+    makedirs('pq-openvpn-linux')
     shutil.move('oqs-openssl-output', 'pq-openvpn-linux')
     shutil.move('openvpn-pq', 'pq-openvpn-linux')
 
@@ -198,8 +207,10 @@ def build_openvpn_linux():
     ## Create a staged tarball for Linux
     os.chdir('stage')
     # Create placeholders for etc and log directories so they'll be created
-    os.makedirs('.' + OPENVPN_LINUX_PREFIX + '/etc')
-    os.makedirs('.' + OPENVPN_LINUX_PREFIX + '/log')
+    makedirs('.' + OPENVPN_LINUX_PREFIX + '/etc')
+    makedirs('.' + OPENVPN_LINUX_PREFIX + '/log')
+    makedirs('.' + OPENVPN_LINUX_PREFIX + '/sbin')
+    makedirs('.' + OPENVPN_LINUX_PREFIX + '/share/doc/openvpn')
     run_command(['touch', '.' + OPENVPN_LINUX_PREFIX + '/etc/.placeholder', '.' + OPENVPN_LINUX_PREFIX + '/log/.placeholder'])
     # Copy initial setup script into sbin directory
     shutil.copy('../../initialsetup.sh', '.' + OPENVPN_LINUX_PREFIX + '/sbin')
@@ -208,13 +219,23 @@ def build_openvpn_linux():
     # Copy Third Party notice into doc directory
     shutil.copy('../../../../ThirdPartyNotice.txt', '.' + OPENVPN_LINUX_PREFIX + '/share/doc/openvpn')
     # Copy service file for systemd into the appropriate place
-    os.makedirs('etc/systemd/system')
+    makedirs('etc/systemd/system')
     shutil.copy('../../pq-openvpn.service', 'etc/systemd/system')
     # Create staged tarball
     run_command(['tar', '-cz', '--group=root', '--owner=root', '-f', '../../pq-openvpn-linux-staged.tar.gz', '.'])
     os.chdir('..')
 
 def build_openvpn_windows():
+    # Only build the Windows version if we have Windows OQS-OpenSSL binaries
+    for filename in ['libeay32.dll', 'ssleay32.dll']:
+        for platform in ['x86', 'x64']:
+            fullpath = '../oqs-openssl-win/' + platform + '/' + filename
+            if not os.path.exists(fullpath):
+                print 'Skipping Windows build because ' + fullpath + ' does not exist.'
+                print 'To build the Windows installer, you need to build the OQS-OpenSSL fork on Windows'
+                print 'with this script and copy the oqs-openssl-win tree into your Linux build host.'
+                return
+
     # clone Walrus/openvpn
     git_clone(OPENVPN_REPO, OPENVPN_BRANCH, OPENVPN_REPO_DIRNAME)
 
@@ -256,7 +277,7 @@ def build_openvpn_windows():
 scratch_dir = "scratch"
 if os.path.exists(scratch_dir):
     shutil.rmtree(scratch_dir, False, on_error)
-os.makedirs(scratch_dir)
+makedirs(scratch_dir)
 os.chdir(scratch_dir)
 
 build_oqs_openssl()
