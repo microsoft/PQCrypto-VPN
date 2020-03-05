@@ -7,7 +7,7 @@ This project takes a fork of the OpenVPN software and combines it with post-quan
 This work is sponsored by [Microsoft Research Security and Cryptography](https://www.microsoft.com/en-us/research/group/security-and-cryptography/), as part of our [post-quantum cryptography project](https://www.microsoft.com/en-us/research/project/post-quantum-cryptography/). Along with academic and industry collaborators, we have designed the following algorithms and contributed them to the [Open Quantum Safe](https://openquantumsafe.org/) project and are usable in this fork of OpenVPN:
 
 * [Frodo](https://github.com/Microsoft/PQCrypto-LWEKE): a key exchange protocol based on the learning with errors problem
-* [SIKE](https://github.com/Microsoft/PQCrypto-SIDH): a key exchange protocol based on Supersingular Isogeny Diffie-Hellman
+* [SIDH](https://github.com/Microsoft/PQCrypto-SIDH): a key exchange protocol based on Supersingular Isogeny Diffie-Hellman
 * [Picnic](https://github.com/Microsoft/Picnic): a signature algorithm using symmetric-key primitives and non-interactive zero-knowledge proofs
 
 We will also enable other ciphersuites as much as we are able to make them work. Our OpenVPN fork depends on the [Open Quantum Safe project fork of OpenSSL](https://github.com/open-quantum-safe/openssl), so contributors looking to add support for a new algorithm should ensure it is supported by Open Quantum Safe. 
