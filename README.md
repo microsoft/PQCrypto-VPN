@@ -47,20 +47,23 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ---
 
+## Cloning
+
+Our build relies on Git submodules for the sources to OQS-OpenSSL and OpenVPN. When cloning, be sure to use the `--recurse-submodules` option to `git clone`. If you forget, you should be able to run `git submodules init` followed by `git submodules update` to retrieve the submodules after a clone.
+
 ## Build Process Overview
 
-Following OpenVPN's build process, binaries for both Linux and Windows are produced by a Linux-based build system that cross-compiles for Windows. Because we require a fork of OpenSSL instead of the standard version, we have to build our own versions for both Linux and Windows. As there is no supported system for cross-compilation of OpenSSL for Windows on Linux, building OpenSSL requires a build step on a Windows system. Our build system is currently hard-coded to use Visual Studio 2017 Enterprise, installed to the standard location on C:.
+Following OpenVPN's build process, binaries for both Linux and Windows are produced by a Linux-based build system that cross-compiles for Windows. Because we require a fork of OpenSSL instead of the standard version, we have to build our own versions for both Linux and Windows. As there is no supported system for cross-compilation of OpenSSL for Windows on Linux, building OpenSSL requires a build step on a Windows system. Our build system on Windows requires Visual Studio 2017. Visual Studio 2019 should work but requires the "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)" component to be installed.
 
-There are two Python scripts for running the build:
+There is one Python script for running the build:
 
-* _build.py_: This will retrieve fresh clones from GitHub and build. This is ideal for building the "official" version. On Windows, this builds only OpenSSL. On Linux, this builds everything, using the output from the Windows OpenSSL build to generate the Windows binaries.
-* _devbuild.py_: This relies upon the developer to clone the repos and builds from there. This is ideal for building and testing local changes. Like build.py, on Windows this only builds OpenSSL (libeay32.dll and ssleay32.dll), and on Linux builds everything using the output of the Windows OpenSSL build to generate the Windows binaries.
+* _build.py_: On Windows, this builds only OpenSSL. On Linux, this builds everything, using the output from the Windows OpenSSL build to generate the Windows binaries. This builds out of the submodule repos which are initially set to the revisions for our official builds. Modifications can be tested by making changes to the submodule repos after cloning. 
 
-The Linux build will expect to find the Windows OpenSSL DLLs in the `openvpn\build\oqs-openssl-win\{x86,x64}`. After building these DLLs on Windows, copy them to your Linux host's repo in this location. Because we build on Windows with Visual Studio 2017, we have included the redistributable Visual C++ Runtime 2017 DLLs in this repo and configured the build to include them in the installer.
+The Linux build will expect to find the Windows OpenSSL DLLs in the `openvpn\build\oqs-openssl-win\{x86,x64}`. After building these DLLs on Windows, copy them to your Linux host's repo in this location. Because we build on Windows with Visual Studio 2017, we have included the redistributable Visual C++ Runtime 2017 DLLs in this repo and configured the build to include them in the installer. If the Windows DLL's are not present on the Linux build host, the Windows build will be skipped and only Linux binaries will be built.
 
 ### Visual Studio and Visual C++ Runtime Redistributable Note
 
-We have not tested building with other versions of Visual Studio other than 2017 Enterprise.
+We have not tested building with other versions of Visual Studio other than 2017 Enterprise. Visual Studio 2019 should work, but will require installing the Visual Studio 
 
 Building OpenSSL DLLs with Visual Studio will make it dependent upon the Visual C++ runtime corresponding to the version of Visual Studio build tools you use. You can check [this page on docs.microsoft.com](https://docs.microsoft.com/en-us/cpp/ide/determining-which-dlls-to-redistribute) for information about where to find the DLLs. Doing this will require you to clone the repos yourself and use the devbuild.py script above, as our official version is locked to version 2017. To use a different version of Visual Studio, you have two options:
 
@@ -70,8 +73,6 @@ Building OpenSSL DLLs with Visual Studio will make it dependent upon the Visual 
 Using a different version of Visual Studio will also require changing the `build.py` or `devbuild.py` script to change the VCVARSALL declaration near the top to point to the location of the 1vcvarsall.bat` file as installed by your version of Visual Studio. This sets up the path and other environment variables so the script can find the build tools.
 
 ---
-
-
 
 ## Subprojects
 
