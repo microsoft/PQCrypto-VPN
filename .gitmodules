@@ -1,5 +1,5 @@
 [submodule "openvpn/build/repos/openvpn-2.4"]
-	path = openvpn/build/repos/openvpn-2.4
+	path = openvpn/build/repos/openvpn-2.4.4
 	url = https://github.com/microsoft/openvpn
 	branch = pqcrypto
 [submodule "openvpn/build/repos/openvpn-build"]

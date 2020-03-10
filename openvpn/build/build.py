@@ -135,7 +135,7 @@ def build_openvpn_linux():
     makedirs('stage')
     stagepath = os.path.abspath('stage')
 
-    os.chdir('repos/openvpn-2.4')
+    os.chdir(os.path.join('repos', OPENVPN_REPO_DIRNAME))
     run_command(['autoreconf', '-i', '-f', '-v'])
 
     if not os.path.exists("../../scratch/oqs-openssl-output/"):
@@ -164,7 +164,7 @@ def build_openvpn_linux():
     # shutil.move('openvpn-pq', 'pq-openvpn-linux')
 
     # os.chdir('repos')
-    # run_command(['tar', 'czf', 'pq-openvpn-linux.tgz', 'oqs-openssl-output', 'openvpn-2.4'])
+    # run_command(['tar', 'czf', 'pq-openvpn-linux.tgz', 'oqs-openssl-output', OPENVPN_REPO_DIRNAME])
     # os.chdir('..')
     # shutil.move('pq-openvpn-linux.tgz', '../pq-openvpn-linux.tgz')
 
@@ -191,16 +191,17 @@ def build_openvpn_linux():
 
 def build_openvpn_windows():
     # Only build the Windows version if we have Windows OQS-OpenSSL binaries
+    os.chdir(SCRIPTDIR)
     for filename in ['libeay32.dll', 'ssleay32.dll']:
         for platform in ['x86', 'x64']:
-            fullpath = '../oqs-openssl-win/' + platform + '/' + filename
+            fullpath = 'oqs-openssl-win/' + platform + '/' + filename
             if not os.path.exists(fullpath):
                 print 'Skipping Windows build because ' + fullpath + ' does not exist.'
                 print 'To build the Windows installer, you need to build the OQS-OpenSSL fork on Windows'
                 print 'with this script and copy the oqs-openssl-win tree into your Linux build host.'
                 return
 
-    os.chdir('repos/openvpn-2.4')
+    os.chdir(os.path.join('repos', OPENVPN_REPO_DIRNAME))
     run_command(['autoreconf', '-i', '-v', '-f'])
     run_command(['./configure'])
     os.chdir('../..')
@@ -209,31 +210,31 @@ def build_openvpn_windows():
     if os.path.exists(OPENVPN_TGZ_NAME):
         os.remove(OPENVPN_TGZ_NAME)
     os.chdir('repos')
-    run_command(['tar', 'czvvf', '../' + OPENVPN_TGZ_NAME, 'openvpn-2.4'])
+    run_command(['tar', 'czvvf', OPENVPN_TGZ_NAME, OPENVPN_REPO_DIRNAME])
     os.chdir('..')
 
-    os.chdir('repos/openvpn-gui')
+    os.chdir(os.path.join('repos', OPENVPN_GUI_REPO_DIRNAME))
     run_command(['autoreconf', '-i', '-v', '-f'])
     os.chdir('../..')
 
     if os.path.exists(OPENVPN_GUI_TGZ_NAME):
         os.remove(OPENVPN_GUI_TGZ_NAME)
     os.chdir('repos')
-    run_command(['tar', 'czvvf', OPENVPN_GUI_TGZ_NAME, 'openvpn-gui'])
+    run_command(['tar', 'czvvf', OPENVPN_GUI_TGZ_NAME, OPENVPN_GUI_REPO_DIRNAME])
     os.chdir('..')
     
     # Start the build
     os.chdir('repos/openvpn-build')
     run_command(['./windows-nsis/build-complete'])
 
-    shutil.move("windows-nsis/" + OPENVPN_INSTALL_EXE_NAME, "../../../" + OPENVPN_INSTALL_EXE_NAME)
+    shutil.move("windows-nsis/" + OPENVPN_INSTALL_EXE_NAME, "../../" + OPENVPN_INSTALL_EXE_NAME)
     os.chdir('../..')
 
 
 ######## main ##########
 
 # Make sure the submodules have been cloned.
-for reponame in ['openssl-oqs', 'openssl-oqs-win-x86', 'openssl-oqs-win-x64', 'openvpn-2.4', 'openvpn-build', 'openvpn-gui']:
+for reponame in ['openssl-oqs', 'openssl-oqs-win-x86', 'openssl-oqs-win-x64', OPENVPN_REPO_DIRNAME, 'openvpn-build', OPENVPN_GUI_REPO_DIRNAME]:
     if not os.path.exists(os.path.join('repos', reponame)):
         raise RuntimeError('Could not find submodule ' + reponame + '. Please use --recurse-submodules option when cloning, or use \'git submodule init\' and \'git submodule update\'.')
 
@@ -241,7 +242,7 @@ for reponame in ['openssl-oqs', 'openssl-oqs-win-x86', 'openssl-oqs-win-x64', 'o
 os.chdir(SCRIPTDIR)
 scratch_dir = "scratch"
 if os.path.exists(scratch_dir):
-    shutil.rmtree(scratch_dir, False, on_error)
+   shutil.rmtree(scratch_dir, False, on_error)
 
 build_oqs_openssl()
 
