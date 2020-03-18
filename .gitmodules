@@ -14,11 +14,3 @@
 	path = openvpn/build/repos/openssl-oqs
 	url = https://github.com/kevinmkane/openssl
 	branch = OpenSSL_1_0_2-stable
-[submodule "openvpn/build/repos/openssl-oqs-win-x86"]
-	path = openvpn/build/repos/openssl-oqs-win-x86
-	url = openvpn/build/repos/openssl-oqs
-	branch = OpenSSL_1_0_2-stable
-[submodule "openvpn/build/repos/openssl-oqs-win-x64"]
-	path = openvpn/build/repos/openssl-oqs-win-x64
-	url = openvpn/build/repos/openssl-oqs
-	branch = OpenSSL_1_0_2-stable

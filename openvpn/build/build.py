@@ -61,7 +61,16 @@ def build_oqs_openssl():
         VSINSTALLPATH = subprocess.check_output([VSWHERE, '-latest', '-property', 'installationPath']).rstrip()
         VCVARSALL = '"' + VSINSTALLPATH + '\\VC\\Auxiliary\\Build\\vcvarsall.bat"'
 
-        os.chdir('repos\\openssl-oqs-win-x86')
+        # Duplicate the source trees for X64 and X86 builds. Delete old copies if they
+        # exist. Development should always happen in openssl-oqs.
+        if (os.path.exists('scratch\\openssl-oqs-win-x64')):
+            shutil.rmtree('scratch\\openssl-oqs-win-x64')
+        if (os.path.exists('scratch\\openssl-oqs-win-x86')):
+            shutil.rmtree('scratch\\openssl-oqs-win-x86')
+        shutil.copytree('repos\\openssl-oqs', 'scratch\\openssl-oqs-win-x64')
+        shutil.copytree('repos\\openssl-oqs', 'scratch\\openssl-oqs-win-x86')
+
+        os.chdir('scratch\\openssl-oqs-win-x86')
 
         # Start the X86 build
         run_command(['perl', 'Configure', 'VC-WIN32', 'no-asm', 'enable-static-engine'])
@@ -234,7 +243,7 @@ def build_openvpn_windows():
 ######## main ##########
 
 # Make sure the submodules have been cloned.
-for reponame in ['openssl-oqs', 'openssl-oqs-win-x86', 'openssl-oqs-win-x64', OPENVPN_REPO_DIRNAME, 'openvpn-build', OPENVPN_GUI_REPO_DIRNAME]:
+for reponame in ['openssl-oqs', OPENVPN_REPO_DIRNAME, 'openvpn-build', OPENVPN_GUI_REPO_DIRNAME]:
     if not os.path.exists(os.path.join('repos', reponame)):
         raise RuntimeError('Could not find submodule ' + reponame + '. Please use --recurse-submodules option when cloning, or use \'git submodule init\' and \'git submodule update\'.')
 
