@@ -13,4 +13,8 @@
 [submodule "openvpn/build/repos/openssl-oqs"]
 	path = openvpn/build/repos/openssl-oqs
 	url = https://github.com/kevinmkane/openssl
-	branch = OpenSSL_1_0_2-stable
+	branch = OQS-OpenSSL_1_1_1-stable
+[submodule "openvpn/build/repos/liboqs"]
+	path = openvpn/build/repos/liboqs
+	url = https://github.com/kevinmkane/liboqs
+	branch = master
