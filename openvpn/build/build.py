@@ -61,43 +61,28 @@ def build_oqs_openssl():
         VSINSTALLPATH = subprocess.check_output([VSWHERE, '-latest', '-property', 'installationPath']).rstrip()
         VCVARSALL = '"' + VSINSTALLPATH + '\\VC\\Auxiliary\\Build\\vcvarsall.bat"'
 
-        # Duplicate the source trees for X64 and X86 builds. Delete old copies if they
-        # exist. Development should always happen in openssl-oqs.
-        if (os.path.exists('scratch\\openssl-oqs-win-x64')):
-            shutil.rmtree('scratch\\openssl-oqs-win-x64')
-        if (os.path.exists('scratch\\openssl-oqs-win-x86')):
-            shutil.rmtree('scratch\\openssl-oqs-win-x86')
-        shutil.copytree('repos\\openssl-oqs', 'scratch\\openssl-oqs-win-x64')
-        shutil.copytree('repos\\openssl-oqs', 'scratch\\openssl-oqs-win-x86')
-
-        os.chdir('scratch\\openssl-oqs-win-x86')
-
-        # Start the X86 build
-        run_command(['perl', 'Configure', 'VC-WIN32', 'no-asm', 'enable-static-engine'])
-        run_command(['ms\\do_ms.bat'])
-        # vcvarsall may change the current working directory. Remember where we were and cd back to it.
+        # Build liboqs
+        os.chdir('repos\\liboqs')
+        run_command(['cmake', '.'])
         mycwd = os.getcwd()
-        os.system(VCVARSALL + ' x86 && cd /d ' + mycwd + ' && nmake -f ms\\ntdll.mak')
-        # Copy the binaries to ../oqs-openssl-win
-        shutil.copy('out32dll\\libeay32.dll', '..\\..\\oqs-openssl-win\\x86\\')
-        shutil.copy('out32dll\\ssleay32.dll', '..\\..\\oqs-openssl-win\\x86\\')
-        # TODO: is there a way to check that the other DLLs in
-        # oqs-openssl-win\x86 (e.g., vcruntime140.dll) have the right version to
-        # work with these openssl DLLs? somehow check that the dependencies of
-        # libeay32.dll and ssleay32.dll are present in the x86 folder. 
+        os.system(VCVARSALL + ' amd64 && cd /d ' + mycwd + ' && msbuild liboqs.sln /p:Configuration=Release;Platform=x64')
         
-        # Start the x64 build
-        os.chdir('..\\openssl-oqs-win-x64')
-        run_command(['perl', 'Configure', 'VC-WIN64A', 'no-asm', 'enable-static-engine'])
+        # Copy liboqs outputs into OQS-OpenSSL locations. CWD is repos\liboqs
+        makedirs('..\\openssl-oqs\\oqs\lib')
+        shutil.copyfile('lib\\Release\\oqs.lib', '..\\openssl-oqs\\oqs\\lib\\oqs.lib')
+        shutil.copytree('include', '..\\openssl-oqs\\oqs\include')
 
-        run_command(['ms\\do_win64a.bat'])
+        os.chdir('..\\openssl-oqs')
+
+        # Start the x64 build
+        run_command(['perl', 'Configure', 'VC-WIN64A', 'no-asm', 'enable-static-engine'])
         mycwd = os.getcwd()
         # Before running nmake, we have to run vcvarsall.bat to set the x64 env vars, in the same shell
         mycwd = os.getcwd()
-        os.system(VCVARSALL + ' amd64 && cd /d ' + mycwd + ' && nmake -f ms\\ntdll.mak')
-        # Copy the binaries to ../oqs-openssl-win
-        shutil.copy('out32dll\\libeay32.dll', '..\\..\\oqs-openssl-win\\x64\\')
-        shutil.copy('out32dll\\ssleay32.dll', '..\\..\\oqs-openssl-win\\x64\\')
+        os.system(VCVARSALL + ' amd64 && cd /d ' + mycwd + ' && nmake')
+        # Copy the binaries to ..\oqs-openssl-win
+        shutil.copy('libcrypto-1_1-x64.dll', '..\\..\\oqs-openssl-win\\x64\\libcrypto-1_1-x64.dll')
+        shutil.copy('libssl-1_1-x64.dll', '..\\..\\oqs-openssl-win\\x64\\libssl-1-1_x64.dll')
         os.chdir('..\\..')
 
     if platform.system() == 'Linux':
