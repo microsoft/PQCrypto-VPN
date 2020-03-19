@@ -26,10 +26,10 @@ import stat
 import sys
 import platform
 
-OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.4.tar.gz'
+OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.8.tar.gz'
 OPENVPN_GUI_TGZ_NAME = '/tmp/openvpn-gui-11.tar.gz'
-OPENVPN_REPO_DIRNAME = 'openvpn-2.4.4'
-OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.4-I601.exe'
+OPENVPN_REPO_DIRNAME = 'openvpn-2.4.8'
+OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.8-I601.exe'
 OPENVPN_GUI_REPO_DIRNAME = 'openvpn-gui'
 OPENVPN_LINUX_PREFIX = '/usr/local/openvpn'
 
@@ -155,8 +155,8 @@ def build_openvpn_linux():
 
     # We need to copy our versions of libcrypto and libssl into the staging area
     makedirs(stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
-    shutil.copy(lib_path + '/libcrypto.so.1.0.0', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
-    shutil.copy(lib_path + '/libssl.so.1.0.0', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
+    shutil.copy(lib_path + '/libcrypto.so.1.1', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
+    shutil.copy(lib_path + '/libssl.so.1.1', stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
 
     os.chdir('../..')
 
@@ -195,8 +195,8 @@ def build_openvpn_linux():
 def build_openvpn_windows():
     # Only build the Windows version if we have Windows OQS-OpenSSL binaries
     os.chdir(SCRIPTDIR)
-    for filename in ['libeay32.dll', 'ssleay32.dll']:
-        for platform in ['x86', 'x64']:
+    for filename in ['libcrypto-1_1-x64.dll', 'libssl-1_1-x64.dll']:
+        for platform in ['x64']:
             fullpath = 'oqs-openssl-win/' + platform + '/' + filename
             if not os.path.exists(fullpath):
                 print 'Skipping Windows build because ' + fullpath + ' does not exist.'
