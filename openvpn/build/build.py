@@ -86,18 +86,27 @@ def build_oqs_openssl():
         os.chdir('..\\..')
 
     if platform.system() == 'Linux':
+        # Build liboqs
+        openssloqspath = os.path.abspath('repos/openssl-oqs/oqs') # This path need not exist yet.
+        os.chdir('repos/liboqs')
+        shutil.rmtree('build', True)
+        os.mkdir('build')
+        os.chdir('build')
+        run_command(['cmake', '-GNinja', '-DCMAKE_INSTALL_PREFIX=' + openssloqspath, '..'])
+        run_command(['ninja'])
+        run_command(['ninja', 'install']) # Deploys library and header files to openssl-oqs repo.
+        os.chdir('../../..') # Back to SCRIPTDIR
+
+        # Build OQS-OpenSSL
         makedirs('scratch/oqs-openssl-output/openssl')
         makedirs('scratch/oqs-openssl-output/ssl')
         prefix = os.path.abspath('scratch/oqs-openssl-output/openssl')
         openssldir = os.path.abspath('scratch/oqs-openssl-output/ssl')
         os.chdir('repos/openssl-oqs')
 
-        run_command(['./config', 'shared', '--prefix='+prefix, '--openssldir='+openssldir])
-        run_command(['make'])
-# At the point we snapped to in OQS-OpenSSL, some tests were broken unrelated
-# to us, and not in a way that seems to matter. Skip running tests, now that
-# run_command will raise an exception when the command fails.
-#        run_command(['make', 'test'])
+        run_command(['./config', 'shared', '--prefix=' + prefix, '--openssldir=' + openssldir, '-lm'])
+        run_command(['make', '-j'])
+        run_command(['make', 'test'])
         run_command(['make', 'install'])
         os.chdir('../..')
 
