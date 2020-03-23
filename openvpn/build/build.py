@@ -26,10 +26,12 @@ import stat
 import sys
 import platform
 
+LIBOQS_TGZ_NAME = '/tmp/liboqs.tar.gz'
+OPENSSL_TGZ_NAME = '/tmp/openssl-oqs.tar.gz'
 OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.8.tar.gz'
 OPENVPN_GUI_TGZ_NAME = '/tmp/openvpn-gui-11.tar.gz'
 OPENVPN_REPO_DIRNAME = 'openvpn-2.4.8'
-OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.8-I601.exe'
+OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.8-I601-Win7.exe'
 OPENVPN_GUI_REPO_DIRNAME = 'openvpn-gui'
 OPENVPN_LINUX_PREFIX = '/usr/local/openvpn'
 
@@ -193,16 +195,19 @@ def build_openvpn_linux():
     os.chdir('..')
 
 def build_openvpn_windows():
-    # Only build the Windows version if we have Windows OQS-OpenSSL binaries
     os.chdir(SCRIPTDIR)
-    for filename in ['libcrypto-1_1-x64.dll', 'libssl-1_1-x64.dll']:
-        for platform in ['x64']:
-            fullpath = 'oqs-openssl-win/' + platform + '/' + filename
-            if not os.path.exists(fullpath):
-                print 'Skipping Windows build because ' + fullpath + ' does not exist.'
-                print 'To build the Windows installer, you need to build the OQS-OpenSSL fork on Windows'
-                print 'with this script and copy the oqs-openssl-win tree into your Linux build host.'
-                return
+
+    if os.path.exists(LIBOQS_TGZ_NAME):
+        os.remove(LIBOQS_TGZ_NAME)
+    os.chdir('repos')
+    run_command(['tar', 'czvvf', LIBOQS_TGZ_NAME, 'liboqs'])
+    os.chdir('..')
+
+    if os.path.exists(OPENSSL_TGZ_NAME):
+        os.remove(OPENSSL_TGZ_NAME)
+    os.chdir('repos')
+    run_command(['tar', 'czvvf', OPENSSL_TGZ_NAME, 'openssl-oqs'])
+    os.chdir('..')
 
     os.chdir(os.path.join('repos', OPENVPN_REPO_DIRNAME))
     run_command(['autoreconf', '-i', '-v', '-f'])

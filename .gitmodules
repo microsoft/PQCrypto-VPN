@@ -17,4 +17,4 @@
 [submodule "openvpn/build/repos/liboqs"]
 	path = openvpn/build/repos/liboqs
 	url = https://github.com/kevinmkane/liboqs
-	branch = master
+	branch = crosswin
