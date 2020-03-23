@@ -1,0 +1,16 @@
+[submodule "openvpn/build/repos/openvpn-2.4"]
+	path = openvpn/build/repos/openvpn-2.4.4
+	url = https://github.com/microsoft/openvpn
+	branch = pqcrypto
+[submodule "openvpn/build/repos/openvpn-build"]
+	path = openvpn/build/repos/openvpn-build
+	url = https://github.com/microsoft/openvpn-build
+	branch = pqcrypto
+[submodule "openvpn/build/repos/openvpn-gui"]
+	path = openvpn/build/repos/openvpn-gui
+	url = https://github.com/microsoft/openvpn-gui
+	branch = pqcrypto
+[submodule "openvpn/build/repos/openssl-oqs"]
+	path = openvpn/build/repos/openssl-oqs
+	url = https://github.com/kevinmkane/openssl
+	branch = OpenSSL_1_0_2-stable
