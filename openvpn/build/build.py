@@ -11,11 +11,8 @@
 #         - sudo apt-get install autoconf curl nsis libtool libssl-dev \
 #                liblz4-dev liblzo2-dev libpam0g-dev gcc-mingw-w64 man2html dos2unix unzip
 #                net-tools pkg-config wget
-#     - Windows: Microsoft Visual Studio 2017 is installed in the default location on C:
-#                recent Perl is installed and in the system PATH
-#                     - http://strawberryperl.com/releases.html (MSI and standalone ZIP versions available)
 
-# Copyright (C) 2018 Microsoft Corporation
+# Copyright (C) 2020 Microsoft Corporation
 
 import os
 import shutil
@@ -54,39 +51,6 @@ def makedirs(name):
 # Build oqs_openssl
 def build_oqs_openssl():
     os.chdir(SCRIPTDIR)
-    if platform.system() == 'Windows':
-        PFX86 = os.getenv('ProgramFiles(x86)', '"C:\\Program Files (x86)"')
-        VSWHERE = PFX86 + '\\Microsoft Visual Studio\\Installer\\vswhere.exe'
-        if not os.path.exists(VSWHERE):
-            raise RuntimeError('Cannot locate vswhere.exe. Please make sure Visual Studio 2017 or higher is installed.')
-        # .rstrip() removes the trailing newline that vswhere outputs
-        VSINSTALLPATH = subprocess.check_output([VSWHERE, '-latest', '-property', 'installationPath']).rstrip()
-        VCVARSALL = '"' + VSINSTALLPATH + '\\VC\\Auxiliary\\Build\\vcvarsall.bat"'
-
-        # Build liboqs
-        os.chdir('repos\\liboqs')
-        run_command(['cmake', '.'])
-        mycwd = os.getcwd()
-        os.system(VCVARSALL + ' amd64 && cd /d ' + mycwd + ' && msbuild liboqs.sln /p:Configuration=Release;Platform=x64')
-        
-        # Copy liboqs outputs into OQS-OpenSSL locations. CWD is repos\liboqs
-        makedirs('..\\openssl-oqs\\oqs\lib')
-        shutil.copyfile('lib\\Release\\oqs.lib', '..\\openssl-oqs\\oqs\\lib\\oqs.lib')
-        shutil.copytree('include', '..\\openssl-oqs\\oqs\include')
-
-        os.chdir('..\\openssl-oqs')
-
-        # Start the x64 build
-        run_command(['perl', 'Configure', 'VC-WIN64A', 'no-asm', 'enable-static-engine'])
-        mycwd = os.getcwd()
-        # Before running nmake, we have to run vcvarsall.bat to set the x64 env vars, in the same shell
-        mycwd = os.getcwd()
-        os.system(VCVARSALL + ' amd64 && cd /d ' + mycwd + ' && nmake')
-        # Copy the binaries to ..\oqs-openssl-win
-        shutil.copy('libcrypto-1_1-x64.dll', '..\\..\\oqs-openssl-win\\x64\\libcrypto-1_1-x64.dll')
-        shutil.copy('libssl-1_1-x64.dll', '..\\..\\oqs-openssl-win\\x64\\libssl-1-1_x64.dll')
-        os.chdir('..\\..')
-
     if platform.system() == 'Linux':
         # Build liboqs
         openssloqspath = os.path.abspath('repos/openssl-oqs/oqs') # This path need not exist yet.
@@ -240,6 +204,12 @@ def build_openvpn_windows():
 
 ######## main ##########
 
+# We no longer build anything on Windows. Windows binaries are all now cross-compiled on Linux.
+if platform.system() == 'Windows':
+    print "Operating system detected as Windows. The entire build, for both Linux and Windows, is now done on Linux alone."
+    print "Building OpenSSL on Windows is no longer needed or supported."
+    sys.exit(0)
+
 # Make sure the submodules have been cloned.
 for reponame in ['openssl-oqs', OPENVPN_REPO_DIRNAME, 'openvpn-build', OPENVPN_GUI_REPO_DIRNAME]:
     if not os.path.exists(os.path.join('repos', reponame)):
@@ -252,12 +222,6 @@ if os.path.exists(scratch_dir):
    shutil.rmtree(scratch_dir, False, on_error)
 
 build_oqs_openssl()
-
-# If this is Windows, we're done
-if platform.system() == 'Windows':
-    print "Operating system detected as Windows, building OQS-OpenSSL only"
-    print "The binaries in Walrus/openvpn/build/oqs-openssl-win should now be updated"
-    sys.exit(0)
 
 build_openvpn_linux()
 
