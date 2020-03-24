@@ -108,7 +108,6 @@ def build_oqs_openssl():
 
         run_command(['./config', 'shared', '--prefix=' + prefix, '--openssldir=' + openssldir, '-lm'])
         run_command(['make', '-j'])
-        run_command(['make', 'test'])
         run_command(['make', 'install'])
         os.chdir('../..')
 
