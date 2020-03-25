@@ -194,8 +194,16 @@ def build_openvpn_windows():
     run_command(['tar', 'czvvf', OPENVPN_GUI_TGZ_NAME, OPENVPN_GUI_REPO_DIRNAME])
     os.chdir('..')
     
-    # Start the build
     os.chdir('repos/openvpn-build')
+    # Remove cached versions of the tarballs we build locally. Normally, code bundles are downloaded from remote
+    # and not expected to change, so this makes sense. But for local developer builds, this can cause older versions
+    # of the code to get built for Windows and it not be obvious this is happening. Since we build these tarballs
+    # locally, there's no reason not to clear them out of the cache since they just get copied over from /tmp.
+    for tarball in [LIBOQS_TGZ_NAME, OPENSSL_TGZ_NAME, OPENVPN_TGZ_NAME, OPENVPN_GUI_TGZ_NAME]:
+        tarballpath = os.path.join('windows-nsis/sources', os.path.basename(tarball))
+        if os.path.exists(tarballpath):
+            os.remove(tarballpath)
+    # Start the build
     run_command(['./windows-nsis/build-complete'])
 
     shutil.move("windows-nsis/" + OPENVPN_INSTALL_EXE_NAME, "../../" + OPENVPN_INSTALL_EXE_NAME)
