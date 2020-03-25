@@ -8,6 +8,17 @@ authentication they do not require certificates. Servers must use a certificate
 and the CA certificate is required by all clients in order to validate the
 server certificate.
 
+For ease of setting up a PKI in an experimental environment, these instructions generate
+all credentials on a single system, and then the user is responsible for transporting them
+to the client and server systems. In a production scenario, private keys should be generated
+on the systems where they will be used and never transported between systems. Instead,
+certificate signing requests (CSRs) and signed certificates should be sent between clients,
+servers, and the CA. These instructions are not meant to reflect best practices for creating
+a production PKI.
+
+The `gencerts.sh` script in this directory is provided as a way of quickly creating credentials.
+Open it in an editor and customize the variables before attempting to use.
+
 ## Setup and create CA
 The Linux build package contains the OQS version of the OpenSSL command line tool (`oqs-openssl-output/openssl/bin/openssl`)
 that we can use to create Picnic X509 certificates. 
@@ -16,9 +27,14 @@ Update it's search path so that it points to the OQS fork of OpenSSL.
     chrpath -r /usr/local/oqssl/lib ./openssl
 ```
 (this assumes you've moved the OQS-OpenSSL libraries to `/usr/local/oqssl/lib`).
+
+If this doesn't work, you can try the patchelf tool:
+```
+    patchelf --set-rpath ./openssl
+```
 Now to create a Picnic private key for the CA:
 ```
-    ./openssl genoqs -picnic -out ca.key 
+    ./openssl genpkey -algorithm picnicl1fs -out ca.key 
 ```
 Then create a self-signed root certificate:
 ```
@@ -32,16 +48,12 @@ output a warning, but everything should proceed. Also, currently Picnic certific
 
 ## Create a server certificate
 
-Create a Picnic private key for the server:
+Create a Picnic private key and CSR for the server:
 ```
-    ./openssl genoqs -picnic -out server.key 
-```
-Create a CSR for the server
-```
-    ./openssl req -new -key server.key -out server.csr -sha512 -batch -subj /CN=PQ-OpenVPN-Demo-Server -config /etc/ssl/openssl.cnf
+    ./openssl req -new -newkey picnicl1fs -keyout server.key -out server.csr -sha512 -batch -subj /CN=PQ-OpenVPN-Demo-Server -config /etc/ssl/openssl.cnf
 ```
 
-Create the server certificate from the CSR
+Sign the server certificate from the CSR with the CA's key:
 ```
    ./openssl x509 -req -in server.csr -out server.crt -CA ca.crt -days 365 -CAkey ca.key -CAcreateserial -sha512 -extensions server -extfile cert-exts 
 ```
@@ -70,15 +82,11 @@ Check that the server cert is valid:
 
 ## (Optional) Create a client certificate
 
-Create a Picnic private key for the client:
-``` 
-    ./openssl genoqs -picnic -out client.key 
+Create a Picnic private key and CSR for the client :
 ```
-Create a CSR for the client 
+    ./openssl req -new -newkey picnicl1fs -keyout client.key -out client.csr -sha512 -batch -subj /CN=PQ-OpenVPN-Demo-client
 ```
-    ./openssl req -new -key client.key -out client.csr -sha512 -batch -subj /CN=PQ-OpenVPN-Demo-client
-```
-Create the client cert from the CSR
+Sign the client certificate from the CSR with the CA's key:
 ```
    ./openssl x509 -req -in client.csr -out client.crt -CA ca.crt -days 365 -CAkey ca.key -CAcreateserial -sha512 -extensions client -extfile cert-exts 
 ```
