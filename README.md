@@ -30,6 +30,15 @@ For bug reports, feature requests, and other issues with the code itself, please
 
 ---
 
+## Prerequisites
+
+* To run the binaries: either Ubuntu Linux 18.04 or newer, or Windows 10. Only 64-bit operating systems are supported.
+* To build the source: Ubuntu Linux 18.04 or newer.
+
+OpenVPN for Windows does not build natively on Windows; it is only cross-compiled on Linux. Therefore all building from source must be done on Linux.
+
+---
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
@@ -53,24 +62,15 @@ Our build relies on Git submodules for the sources to OQS-OpenSSL and OpenVPN. W
 
 ## Build Process Overview
 
-Following OpenVPN's build process, binaries for both Linux and Windows are produced by a Linux-based build system that cross-compiles for Windows. Because we require a fork of OpenSSL instead of the standard version, we have to build our own versions for both Linux and Windows. As there is no supported system for cross-compilation of OpenSSL for Windows on Linux, building OpenSSL requires a build step on a Windows system. Our build system on Windows requires Visual Studio 2017. Visual Studio 2019 should work but requires the "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)" component to be installed.
+Following OpenVPN's build process, binaries for both Linux and Windows are produced by a Linux-based build system that cross-compiles for Windows. Our build process first builds liboqs and the Open Quantum Safe fork of OpenSSL, and then our version of OpenVPN which uses them.
 
 There is one Python script for running the build:
 
-* _build.py_: On Windows, this builds only OpenSSL. On Linux, this builds everything, using the output from the Windows OpenSSL build to generate the Windows binaries. This builds out of the submodule repos which are initially set to the revisions for our official builds. Modifications can be tested by making changes to the submodule repos after cloning. 
+* _build.py_: This does a full build of everything on Linux: both Linux and Windows versions of liboqs, OpenSSL, OpenVPN, and on Windows only, OpenVPN-GUI. The outputs of the build process are a gzipped tarball that can be unpacked onto an Ubuntu Linux system, and a Windows installer executable for installing on 64-bit Windows.
 
-The Linux build will expect to find the Windows OpenSSL DLLs in the `openvpn\build\oqs-openssl-win\{x86,x64}`. After building these DLLs on Windows, copy them to your Linux host's repo in this location. Because we build on Windows with Visual Studio 2017, we have included the redistributable Visual C++ Runtime 2017 DLLs in this repo and configured the build to include them in the installer. If the Windows DLL's are not present on the Linux build host, the Windows build will be skipped and only Linux binaries will be built.
+See the comments at the top of `build.py` for a list of prerequisite packages that must be installed before building. There is also a Dockerfile in `openvpn/build/docker` to build the installers in a container.
 
-### Visual Studio and Visual C++ Runtime Redistributable Note
-
-We have not tested building with other versions of Visual Studio other than 2017 Enterprise. Visual Studio 2019 should work, but will require installing the Visual Studio 
-
-Building OpenSSL DLLs with Visual Studio will make it dependent upon the Visual C++ runtime corresponding to the version of Visual Studio build tools you use. You can check [this page on docs.microsoft.com](https://docs.microsoft.com/en-us/cpp/ide/determining-which-dlls-to-redistribute) for information about where to find the DLLs. Doing this will require you to clone the repos yourself and use the devbuild.py script above, as our official version is locked to version 2017. To use a different version of Visual Studio, you have two options:
-
-1. _Include the appropriate redistributable DLLs in the OpenVPN installer built by our build process._ In the openvpn-build repo, edit `windows-nsis\openvpn.nsi`, and add/change/remove lines from the Section "-OpenSSL DLLs" to name the DLLs for the version of Visual Studio you're using to build. Add them as well at the bottom where the "Delete" lines are so they are properly removed when uninstalled. Then place those DLLs alongside the OpenSSL DLLs in the `oqs-openssl-win` subdirectory.
-2. _Install the redistributable installer on the host directly._ Using the site above, locate the standalone installer appropriate to your version of Visual Studio and run it on the host where you'll be running OpenVPN. The references to these DLLs in `openvpn.nsi` can then be removed. This does require running the standalone installer on each host where you will run OpenVPN.
-
-Using a different version of Visual Studio will also require changing the `build.py` or `devbuild.py` script to change the VCVARSALL declaration near the top to point to the location of the 1vcvarsall.bat` file as installed by your version of Visual Studio. This sets up the path and other environment variables so the script can find the build tools.
+Previous versions of PQCrypto-VPN required OpenSSL ot be built on Windows, but now cross-compilation on Linux is supported there as well. As a result, our entire build process runs only on Linux, and we no longer require doing part of the build process on Windows nor are dependent on the Visual C++ Runtime Redistributable DLLs.
 
 ---
 
@@ -78,16 +78,21 @@ Using a different version of Visual Studio will also require changing the `build
 
 To enable our build of OpenVPN, we have forks of three OpenVPN GitHub repos that we have modified to enable this functionality. Issues and pull requests are welcomed in these subprojects as well. The same requirements to sign a CLA apply to these repos.
 
-* https://github.com/Microsoft/openvpn
-* https://github.com/Microsoft/openvpn-build
-* https://github.com/Microsoft/openvpn-gui
+* https://github.com/microsoft/openvpn
+* https://github.com/microsoft/openvpn-build
+* https://github.com/microsoft/openvpn-gui
+
+Open Quantum Safe's implementations of the algorithms are in their liboqs library, which is consumed by the OpenSSL fork below.
+
+* https://github.com/open-quantum-safe/liboqs
 
 We also use the OpenSSL fork maintained by the Open Quantum Safe Project for the implementations of the algorithms themselves. As we work closely with OQS, we do not maintain our own fork of their code. They also welcome opening issues and pull requests directly at their project.
 
 * https://github.com/open-quantum-safe/openssl
 
-Due to changes in the content of the upstream OQS OpenSSL fork, we are temporarily using a fork of that repo to fix the resulting build break. We will return to the official upstream branch when we migrate to the OpenSSL 1.1.1 fork.
+We are temporarily using a private fork of both liboqs and OpenSSL while both upstream code bases are still rapidly changing, and keeping them snapped to a known working point. When the upstream branches have stable release points, we will return to referencing them directly. For now these are our private forks:
 
+* https://github.com/kevinmkane/liboqs
 * https://github.com/kevinmkane/openssl
 
 ---
@@ -117,6 +122,10 @@ You then need to create a configuration file. If running a server, the automatic
 * _client-passdb.ovpn_: Client authenticating with a username/password
 * _server.ovpn_: Server only accepting client certificate authentication
 * _server-passdb.ovpn_: Server only accepting username/password authentication
+
+The `ecdh-curve` configuration directive is used to select the key exchange algorithm and must be present to guarantee a post-quantum algorithm is selected. You can see the list of valid choices from the list of supported algorithms at OQS's OpenSSL fork here: https://github.com/open-quantum-safe/openssl#supported-algorithms
+
+The authentication algorithm depends on the types of certificates provided as part of the configuration. You can use classical signature algorithms (like RSA or ECDSA), but these are not post-quantum. See the instructions in `openvpn/config/picnic-pki.md` for creating certificates using Picnic-L1FS as the signature algorithm as one post-quantum option.
 
 OpenVPN is then started by running from a root command prompt:
 
@@ -163,8 +172,4 @@ This uses the OpenSSL command line tool from the Open Quantum Safe fork of OpenS
 
 # Known Issues
 
-The build system currently does some extraneous work, such as cross-compiling OpenSSL for Windows on Linux, and then using the pre-made OpenSSL binaries. At present the Open Quantum Safe extensions do not cross-compile.
-
-OpenVPN's line length limit in configuration files limits how many ciphersuites we can specify in order to guarantee a post-quantum ciphersuite is selected.
-
-Our code is currently based on OpenVPN 2.4.4 and the Open Quantum Safe fork of OpenSSL 1.0.2. Because work is still underway to integrate liboqs with the OpenSSL 1.1 series, and OpenVPN began supporting OpenSSL 1.1 with version 2.4.5, we have not yet updated to the latest version of OpenVPN. To address CVE-2018-9336 which affects OpenVPN versions 2.4.5 and earlier, we have backported the fix from version 2.4.6.
+Without care taken to specify the necessary directives, it is possible for OpenVPN to negotiate a non-post-quantum key exchange, and it is not obvious from OpenVPN's log output which key exchange algorithm it has negotiated. Work is pending to disable non-PQ key exchange algorithms, and also to surface which algorithm gets negotiated in OpenVPN's output.
