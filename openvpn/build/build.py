@@ -22,6 +22,7 @@ import fileinput
 import stat
 import sys
 import platform
+import argparse
 
 LIBOQS_TGZ_NAME = '/tmp/liboqs.tar.gz'
 OPENSSL_TGZ_NAME = '/tmp/openssl-oqs.tar.gz'
@@ -212,6 +213,14 @@ def build_openvpn_windows():
 
 ######## main ##########
 
+# Process command line arguments.
+parser = argparse.ArgumentParser(description="Build PQCrypto-VPN.")
+
+parser.add_argument("--skip-windows", dest='skip_windows', action='store_true', default=False)
+parser.add_argument("--skip-linux", dest='skip_linux', action='store_true', default=False)
+
+args = parser.parse_args()
+
 # We no longer build anything on Windows. Windows binaries are all now cross-compiled on Linux.
 if platform.system() == 'Windows':
     print "Operating system detected as Windows. The entire build, for both Linux and Windows, is now done on Linux alone."
@@ -229,11 +238,14 @@ scratch_dir = "scratch"
 if os.path.exists(scratch_dir):
    shutil.rmtree(scratch_dir, False, on_error)
 
-build_oqs_openssl()
+if not args.skip_linux:
+    build_oqs_openssl()
 
-build_openvpn_linux()
+    build_openvpn_linux()
 
-build_openvpn_windows()
+if not args.skip_windows:
+    print "Building Windows"
+    build_openvpn_windows()
 
 print "The staged tarball provides a readily deployable set of binaries on a Linux VM to quickly"
 print "bring up a VPN server. It has been tested with the Ubuntu image currently provided by Azure."
