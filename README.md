@@ -58,7 +58,7 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Cloning
 
-Our build relies on Git submodules for the sources to OQS-OpenSSL and OpenVPN. When cloning, be sure to use the `--recurse-submodules` option to `git clone`. If you forget, you should be able to run `git submodules init` followed by `git submodules update` to retrieve the submodules after a clone. For your convenience, here is a full clone command:
+Our build relies on Git submodules for the sources to OQS-OpenSSL and OpenVPN. When cloning, be sure to use the `--recurse-submodules` option to `git clone`. If you forget, you should be able to run `git submodule init` followed by `git submodule update` to retrieve the submodules after a clone. For your convenience, here is a full clone command:
 
 	git clone --branch dev-1.3 --recurse-submodules https://github.com/microsoft/PQCrypto-VPN.git
 
