@@ -9,7 +9,7 @@
 #     - any necessary authentication tokens are already available to Git (if not using the public GitHub URLs)
 #     - Linux: all dependencies are installed
 #         - sudo apt-get install autoconf curl nsis libtool libssl-dev \
-#                liblz4-dev liblzo2-dev libpam0g-dev gcc-mingw-w64 man2html dos2unix unzip
+#                liblz4-dev liblzo2-dev libpam0g-dev gcc-mingw-w64 man2html dos2unix unzip \
 #                net-tools pkg-config wget cmake ninja-build
 
 # Copyright (C) 2020 Microsoft Corporation
