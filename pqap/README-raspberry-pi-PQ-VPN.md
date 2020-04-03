@@ -3,6 +3,8 @@ A VPN Device with Post-Quantum Security
 
 Please visit our project page at: https://www.microsoft.com/en-us/research/project/post-quantum-crypto-vpn/
 
+**These instructions have not been tested nor updated to work with PQCrypto-VPN 1.3. Contributions welcomed!**
+
 Device Hardware
 ----------------
 We tested with a Raspberry Pi 3 Model B (purchased in summer 2017). When the
