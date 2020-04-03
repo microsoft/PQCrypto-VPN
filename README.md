@@ -12,8 +12,6 @@ This work is sponsored by [Microsoft Research Security and Cryptography](https:/
 
 We will also enable other ciphersuites as much as we are able to make them work. Our OpenVPN fork depends on the [Open Quantum Safe project fork of OpenSSL](https://github.com/open-quantum-safe/openssl), so contributors looking to add support for a new algorithm should ensure it is supported by Open Quantum Safe. 
 
-We test on Ubuntu Server 16.04 LTS as our Linux platform, and on Windows 10 with Visual Studio 2017. We have not yet tested any other combinations but will offer comment on what we think will be required with other versions, particularly for Microsoft platforms.
-
 We also provide software and instructions for building a post-quantum secure VPN appliance with a Raspberry Pi 3.  The device acts as a WiFi access point, and tunnels all of its traffic over the post-quantum VPN.  This has two main advantages when compared to using a VPN client on the device.  First, installing VPN client software is not required.  Second, using VPN software can be error prone, and not all traffic will be protected if there are configuration errors.  With a hardware device, all devices connecting to it get post-quantum security transparently.  See the `pqap` directory, and the README file there for more information.
 
 ---
@@ -33,7 +31,7 @@ For bug reports, feature requests, and other issues with the code itself, please
 ## Prerequisites
 
 * To run the binaries: either Ubuntu Linux 18.04 or newer, or Windows 10. Only 64-bit operating systems are supported.
-* To build the source: Ubuntu Linux 18.04 or newer.
+* To build the source: Ubuntu Linux 18.04. Newer versions of Ubuntu are likely to also be fine, but we have not tested them.
 
 OpenVPN for Windows does not build natively on Windows; it is only cross-compiled on Linux. Therefore all building from source must be done on Linux.
 
@@ -127,7 +125,9 @@ You then need to create a configuration file. If running a server, the automatic
 
 The `ecdh-curve` configuration directive is used to select the key exchange algorithm and must be present to guarantee a post-quantum algorithm is selected. You can see the list of valid choices from the list of supported algorithms at OQS's OpenSSL fork here: https://github.com/open-quantum-safe/openssl#supported-algorithms
 
-The authentication algorithm depends on the types of certificates provided as part of the configuration. You can use classical signature algorithms (like RSA or ECDSA), but these are not post-quantum. See the instructions in `openvpn/config/picnic-pki.md` for creating certificates using Picnic-L1FS as the signature algorithm as one post-quantum option.
+If no `ecdh-curve` directive is present, `p256_sikep434` is chosen by default. If present, the `ecdh-curve` directive must agree on both client and server, or a session will fail to negotiate. It is possible to pick a non-post quantum algorithm from the list of all algorithms supported by OpenSSL; make sure only to select choices from the list linked above to ensure use of a post-quantum key exchange.
+
+The authentication algorithm depends on the types of certificates provided as part of the configuration. You can use classical signature algorithms (like RSA or ECDSA), but these are not post-quantum. See the instructions in `openvpn/config/picnic-pki.md` for creating certificates using Picnic-L1FS as the signature algorithm as one post-quantum option. See the above list of supported algorithms for post-quantum signature algorithms.
 
 OpenVPN is then started by running from a root command prompt:
 
@@ -135,7 +135,7 @@ OpenVPN is then started by running from a root command prompt:
     /usr/local/openvpn/sbin/openvpn --config <config file name>
 ``
 
-This will keep OpenVPN running in the foreground and keep control of your terminal. You can safely terminate OpenVPN by typing Control-C; OpenVPN will clean up its network setup before exiting. You can add the `--daemon` to the command line to make it go into the background, and you can then use `kill` to send its process a signal to terminate when desired.
+This will keep OpenVPN running in the foreground and keep control of your terminal. You can safely terminate OpenVPN by typing Control-C; OpenVPN will clean up its network setup before exiting. You can add the `--daemon` to the command line or `daemon` to the configuration file to make it go into the background, and you can then use `kill` to send its process a signal to terminate when desired.
 
 ### Setting up username/password authentication on a Linux server 
 
@@ -174,4 +174,8 @@ This uses the OpenSSL command line tool from the Open Quantum Safe fork of OpenS
 
 # Known Issues
 
-Without care taken to specify the necessary directives, it is possible for OpenVPN to negotiate a non-post-quantum key exchange, and it is not obvious from OpenVPN's log output which key exchange algorithm it has negotiated. Work is pending to disable non-PQ key exchange algorithms, and also to surface which algorithm gets negotiated in OpenVPN's output.
+Only the server currently lists the key exchange algorithm used in its log output as "group_id", and it is only listed by the OpenSSL numerical identifier, which we realize is not very user-friendly. After the group_id value will be a message that says either `(post-quantum key exchange)` or `(NOT post-quantum key exchange)` to address this. OpenSSL does not expose the necessary API surface to obtain this information on the client.
+
+Although the p256_sikep434 hybrid key exchange is chosen by default, it is possible to choose a non-post quantum key exchange with the `ecdh-curve` configuration directive. We have chosen this default and provided ample documentation to ensure as much as possible that a non-post quantum key exchange is not selected accidentally.
+
+The Open Quantum Safe fork of OpenSSL only provides post-quantum algorithms for TLS 1.3 connections. Use of TLS 1.2 or earlier has no post-quantum algorithms. Therefore, it is vital the `tls-version-min 1.3` directive is always present in configuration files to ensure clients and servers never fall back to older versions of TLS.
