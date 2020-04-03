@@ -50,7 +50,7 @@ def makedirs(name):
         pass
 
 # Build oqs_openssl
-def build_oqs_openssl():
+def build_oqs_openssl(build_debug):
     os.chdir(SCRIPTDIR)
     if platform.system() == 'Linux':
         # Build liboqs
@@ -59,7 +59,10 @@ def build_oqs_openssl():
         shutil.rmtree('build', True)
         os.mkdir('build')
         os.chdir('build')
-        run_command(['cmake', '-GNinja', '-DCMAKE_INSTALL_PREFIX=' + openssloqspath, '..'])
+        if build_debug:
+            run_command(['cmake', '-GNinja', '-DCMAKE_INSTALL_PREFIX=' + openssloqspath, '-DCMAKE_BUILD_TYPE=Debug', '..'])
+        else:
+            run_command(['cmake', '-GNinja', '-DCMAKE_INSTALL_PREFIX=' + openssloqspath, '..'])
         run_command(['ninja'])
         run_command(['ninja', 'install']) # Deploys library and header files to openssl-oqs repo.
         os.chdir('../../..') # Back to SCRIPTDIR
@@ -71,7 +74,10 @@ def build_oqs_openssl():
         openssldir = os.path.abspath('scratch/oqs-openssl-output/ssl')
         os.chdir('repos/openssl-oqs')
 
-        run_command(['./config', 'shared', '--prefix=' + prefix, '--openssldir=' + openssldir, '-lm'])
+        if build_debug:
+            run_command(['./config', 'shared', '--debug', '--prefix=' + prefix, '--openssldir=' + openssldir, '-lm'])
+        else:
+            run_command(['./config', 'shared', '--prefix=' + prefix, '--openssldir=' + openssldir, '-lm'])
         run_command(['make', '-j'])
         run_command(['make', 'install'])
         os.chdir('../..')
@@ -117,7 +123,10 @@ def build_openvpn_linux():
     openssl_libs = 'OPENSSL_LIBS="-L' + lib_path + ' -Wl,-rpath='+ OPENVPN_LINUX_PREFIX + '/lib ' + ' -lssl -lcrypto"'
 
     # we need to use os.system here so that the env vars are set correctly
-    os.system('./configure --prefix=' + OPENVPN_LINUX_PREFIX + ' ' + openssl_cflags + ' ' + openssl_libs + ' && make && make DESTDIR=' + stagepath + ' install')
+    if build_debug:
+        os.system('./configure --prefix=' + OPENVPN_LINUX_PREFIX + ' --enable-debug ' + openssl_cflags + ' ' + openssl_libs + ' && make && make DESTDIR=' + stagepath + ' install')
+    else:
+        os.system('./configure --prefix=' + OPENVPN_LINUX_PREFIX + ' ' + openssl_cflags + ' ' + openssl_libs + ' && make && make DESTDIR=' + stagepath + ' install')
 
     # We need to copy our versions of libcrypto and libssl into the staging area
     makedirs(stagepath + '/' + OPENVPN_LINUX_PREFIX + '/lib')
@@ -218,6 +227,8 @@ parser = argparse.ArgumentParser(description="Build PQCrypto-VPN.")
 
 parser.add_argument("--skip-windows", dest='skip_windows', action='store_true', default=False)
 parser.add_argument("--skip-linux", dest='skip_linux', action='store_true', default=False)
+# This argument only builds a debug version for Linux. We don't yet have support for building a debug version for Windows.
+parser.add_argument("--debug", dest='build_debug', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -239,9 +250,9 @@ if os.path.exists(scratch_dir):
    shutil.rmtree(scratch_dir, False, on_error)
 
 if not args.skip_linux:
-    build_oqs_openssl()
+    build_oqs_openssl(args.build_debug)
 
-    build_openvpn_linux()
+    build_openvpn_linux(args.build_debug)
 
 if not args.skip_windows:
     print "Building Windows"
