@@ -102,7 +102,7 @@ def on_error(func, path, exc_info):
         raise
 
 
-def build_openvpn_linux():
+def build_openvpn_linux(build_debug):
     os.chdir(SCRIPTDIR)
     if os.path.exists('stage'):
         shutil.rmtree('stage')
