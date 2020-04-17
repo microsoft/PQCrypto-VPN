@@ -26,10 +26,10 @@ import argparse
 
 LIBOQS_TGZ_NAME = '/tmp/liboqs.tar.gz'
 OPENSSL_TGZ_NAME = '/tmp/openssl-oqs.tar.gz'
-OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.8.tar.gz'
+OPENVPN_TGZ_NAME = '/tmp/openvpn-2.4.9.tar.gz'
 OPENVPN_GUI_TGZ_NAME = '/tmp/openvpn-gui-11.tar.gz'
-OPENVPN_REPO_DIRNAME = 'openvpn-2.4.8'
-OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.8-I601-Win7.exe'
+OPENVPN_REPO_DIRNAME = 'openvpn-2.4.9'
+OPENVPN_INSTALL_EXE_NAME = 'openvpn-install-2.4.9-I601-Win10.exe'
 OPENVPN_GUI_REPO_DIRNAME = 'openvpn-gui'
 OPENVPN_LINUX_PREFIX = '/usr/local/openvpn'
 
@@ -258,19 +258,24 @@ if not args.skip_windows:
     print "Building Windows"
     build_openvpn_windows()
 
-print "The staged tarball provides a readily deployable set of binaries on a Linux VM to quickly"
-print "bring up a VPN server. It has been tested with the Ubuntu image currently provided by Azure."
-print "This installation may be usable as a client with a client configuration file instead, but this"
-print "is untested, and the automatic service startup is configured to look for server.ovpn as a config file."
-print "To use the staged Linux tarball, do the following as root/using sudo in your VM:"
-print "1. cd /"
-print "2. tar xvzf <path>/pq-openvpn-linux-staged.tar.gz"
-print "3. Create /usr/local/openvpn/etc/server.ovpn and dependent cert/key files as"
-print "   needed."
-print "4. /usr/local/openvpn/sbin/initialsetup.sh"
-print ""
-print "To upgrade an existing installation:"
-print "1. systemctl stop pq-openvpn"
-print "2. cd /"
-print "3. tar xvzf <path>/pq-openvpn-linux-staged.tar.gz"
-print "4. systemctl start pq-openvpn"
+if not args.skip_linux:
+    print "The staged tarball provides a readily deployable set of binaries on a Linux VM to quickly"
+    print "bring up a VPN server. It has been tested with the Ubuntu image currently provided by Azure."
+    print "This installation may be usable as a client with a client configuration file instead, but this"
+    print "is untested, and the automatic service startup is configured to look for server.ovpn as a config file."
+    print "To use the staged Linux tarball, do the following as root/using sudo in your VM:"
+    print "1. cd /"
+    print "2. tar xvzf <path>/pq-openvpn-linux-staged.tar.gz"
+    print "3. Create /usr/local/openvpn/etc/server.ovpn and dependent cert/key files as"
+    print "   needed."
+    print "4. /usr/local/openvpn/sbin/initialsetup.sh"
+    print ""
+    print "To upgrade an existing installation:"
+    print "1. systemctl stop pq-openvpn"
+    print "2. cd /"
+    print "3. tar xvzf <path>/pq-openvpn-linux-staged.tar.gz"
+    print "4. systemctl start pq-openvpn"
+    print ""
+
+if not args.skip_windows:
+    print "Windows installer is available as: %s" % OPENVPN_INSTALL_EXE_NAME
