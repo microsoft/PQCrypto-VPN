@@ -76,7 +76,7 @@ Using a different version of Visual Studio will also require changing the `build
 
 ## Subprojects
 
-To enable our build of OpenVPN, we have forks of three OpenVPN GitHub repos that we have modified to enable this functionality. Issues and pull requests are welcomed in these subprojects as well. The same requirements to sign a CLA apply to these repos.
+To enable our build of OpenVPN, we have forks of three OpenVPN GitHub repos that we have modified to enable this functionality. Please open all issues here on the PQCrypto-VPN issue tracker. Pull requests are welcomed in the subprojects. The same requirements to sign the Microsoft CLA apply to these repos.
 
 * https://github.com/Microsoft/openvpn
 * https://github.com/Microsoft/openvpn-build
@@ -89,6 +89,8 @@ We also use the OpenSSL fork maintained by the Open Quantum Safe Project for the
 Due to changes in the content of the upstream OQS OpenSSL fork, we are temporarily using a fork of that repo to fix the resulting build break. We will return to the official upstream branch when we migrate to the OpenSSL 1.1.1 fork.
 
 * https://github.com/kevinmkane/openssl
+
+No issues or pull requests are accepted on this private fork. Please address all issues and pull requests to the Open Quantum Safe repositories linked above.
 
 ---
 
