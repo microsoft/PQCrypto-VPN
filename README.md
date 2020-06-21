@@ -90,11 +90,6 @@ We also use the OpenSSL fork maintained by the Open Quantum Safe Project for the
 
 * https://github.com/open-quantum-safe/openssl
 
-We are temporarily using a private fork of both liboqs and OpenSSL while both upstream code bases are still rapidly changing, and keeping them snapped to a known working point. When the upstream branches have stable release points, we will return to referencing them directly. For now these are our private forks:
-
-* https://github.com/kevinmkane/liboqs
-* https://github.com/kevinmkane/openssl
-
 ---
 
 ## Setup instructions
