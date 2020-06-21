@@ -9,6 +9,7 @@ This work is sponsored by [Microsoft Research Security and Cryptography](https:/
 * [Frodo](https://github.com/Microsoft/PQCrypto-LWEKE): a key exchange protocol based on the learning with errors problem
 * [SIDH](https://github.com/Microsoft/PQCrypto-SIDH): a key exchange protocol based on Supersingular Isogeny Diffie-Hellman
 * [Picnic](https://github.com/Microsoft/Picnic): a signature algorithm using symmetric-key primitives and non-interactive zero-knowledge proofs
+* [qTESLA](https://github.com/qtesla/qTesla): a signature algorithm based on the ring learning with errors problem
 
 We will also enable other ciphersuites as much as we are able to make them work. Our OpenVPN fork depends on the [Open Quantum Safe project fork of OpenSSL](https://github.com/open-quantum-safe/openssl), so contributors looking to add support for a new algorithm should ensure it is supported by Open Quantum Safe. 
 
@@ -76,7 +77,9 @@ Previous versions of PQCrypto-VPN required OpenSSL ot be built on Windows, but n
 
 ## Subprojects
 
-To enable our build of OpenVPN, we have forks of three OpenVPN GitHub repos that we have modified to enable this functionality. Issues and pull requests are welcomed in these subprojects as well. The same requirements to sign a CLA apply to these repos.
+To enable our build of OpenVPN, we have forks of three OpenVPN GitHub repos that we have modified to enable this functionality. Pull requests are welcomed in these subprojects as well. The same requirements to sign a CLA apply to these repos.
+
+Please open all issues here on the PQCrypto-VPN project.
 
 * https://github.com/microsoft/openvpn
 * https://github.com/microsoft/openvpn-build
