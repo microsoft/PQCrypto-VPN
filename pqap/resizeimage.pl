@@ -16,7 +16,7 @@ my $EXTRA_SPACE = 100*1024;
 
 my $who = `whoami`;
 
-if ($who !~ /root/)
+if ($who !~ /^root$/)
 {
 
 	print "This should be run as root or with the sudo command.\n";
