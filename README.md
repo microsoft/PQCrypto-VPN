@@ -1,3 +1,5 @@
+# Thank you for your interest! This project is no longer active. Please see [the OpenVPN demo at the Open Quantum Safe project](https://github.com/open-quantum-safe/oqs-demos/tree/main/openvpn) for an up-to-date PQ-enabled version of OpenVPN.
+
 # Welcome to the PQCrypto-VPN project!
 
 Please start with our [project page at Microsoft Research](https://www.microsoft.com/en-us/research/project/post-quantum-crypto-vpn/) for an overview of this project.
